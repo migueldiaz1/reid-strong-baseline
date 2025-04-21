@@ -9,13 +9,16 @@ from .market1501 import Market1501
 from .msmt17 import MSMT17
 from .veri import VeRi
 from .dataset_loader import ImageDataset
-
+from .UAM import UAM
+from .UAM_test import UAM_test
 __factory = {
     'market1501': Market1501,
     # 'cuhk03': CUHK03,
     'dukemtmc': DukeMTMCreID,
     'msmt17': MSMT17,
     'veri': VeRi,
+    'UAM': UAM,
+    'UAM_test': UAM_test,
 }
 
 
