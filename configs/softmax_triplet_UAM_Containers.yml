@@ -15,7 +15,7 @@ INPUT:
   
 DATASETS:
   NAMES: ('UAM')
-  ROOT_DIR: '/kaggle/input/uam-base/home/mdb/DL_Lab3/UAM_DATASET/stratified_correct_noC004'
+  ROOT_DIR: '/kaggle/input/uam-base/home/mdb/DL_Lab3/UAM_DATASET/stratified_correct_noC004/Containers'
 
 DATALOADER:
   SAMPLER: 'softmax_triplet'
