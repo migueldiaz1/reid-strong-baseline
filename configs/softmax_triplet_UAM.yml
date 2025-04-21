@@ -1,5 +1,5 @@
 MODEL:
-  PRETRAIN_PATH: './modeling/resnet50-19c8e357.pth'
+  PRETRAIN_PATH: '/kaggle/input/weights/resnet50-19c8e357 (1).pth'
   PRETRAIN_CHOICE: 'imagenet'
   METRIC_LOSS_TYPE: 'triplet_center'
   IF_LABELSMOOTH: 'on'
@@ -15,7 +15,7 @@ INPUT:
   
 DATASETS:
   NAMES: ('UAM')
-  ROOT_DIR: 'local rute to dataset...../ICIP_UrbAM-ReID/splits/Containers/containers/'
+  ROOT_DIR: '/kaggle/input/icip-urbam/ICIP_UrbAM-ReID/splits/Containers/containers'
 
 DATALOADER:
   SAMPLER: 'softmax_triplet'
@@ -58,5 +58,5 @@ TEST:
   RE_RANKING: 'no'
   NECK_FEAT: 'after'
   FEAT_NORM: 'yes'
-OUTPUT_DIR: "./tools/checkpoints/"
+OUTPUT_DIR: "/kaggle/working/output_BoT"
 
