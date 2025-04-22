@@ -4,7 +4,7 @@ MODEL:
   METRIC_LOSS_TYPE: 'triplet_center'
   IF_LABELSMOOTH: 'on'
   IF_WITH_CENTER: 'yes'
-  NAME: 'IBN-Net50-a'
+  NAME: 'resnet50_ibn_a'
 
 INPUT:
   SIZE_TRAIN: [224, 224]
