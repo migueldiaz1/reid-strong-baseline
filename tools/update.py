@@ -116,7 +116,7 @@ def main():
     os.makedirs(output_dist_dir, exist_ok=True)
     np.savetxt(os.path.join(output_dist_dir, "re_rank_dist.csv"), re_rank_dist, delimiter=",")
 
-    indices = np.argsort(re_rank_dist, axis=1)[:, :100]
+    indices = np.argsort(re_rank_dist, axis=1)[:, :150]
     #indices = np.argsort(re_rank_dist, axis=1)
 
     m, n = indices.shape
