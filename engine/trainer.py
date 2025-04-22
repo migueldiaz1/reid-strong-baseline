@@ -206,6 +206,11 @@ def do_train(
                 logger.info("CMC curve, Rank-{:<3}:{:.1%}".format(r, cmc[r - 1]))
 
     trainer.run(train_loader, max_epochs=epochs)
+    
+    ########### Guardar el modelo final con nombre claro (con número de epoch real)
+    final_model_path = os.path.join(output_dir, f"{cfg.MODEL.NAME}_model_epoch_{epochs}.pt")
+    torch.save(model.state_dict(), final_model_path)
+
 
 
 def do_train_with_center(
