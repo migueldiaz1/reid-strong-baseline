@@ -1,0 +1,152 @@
+import os
+import matplotlib.pyplot as plt
+from PIL import Image
+import xml.etree.ElementTree as ET
+import random
+
+# === CONFIG ===
+base_root = "/home/mdb/DL_Lab3/UAM_DATASET/unified/"
+base_results = "/home/mdb/DL_Lab3/Part-Aware-Transformer/UAM_per_class/Results_UAM_ALL"
+
+train_img_dir = os.path.join(base_root, "image_train/")
+test_img_dir = os.path.join(base_root, "image_test/")
+query_img_dir = os.path.join(base_root, "image_query/")
+
+query_xml = os.path.join(base_root, "query_label.xml")
+train_xml = os.path.join(base_root, "train_label.xml")
+test_xml  = os.path.join(base_root, "test_label.xml")
+
+results_path = base_results
+
+num_queries_to_show = 100
+top_k = 5
+resize_dim = (256, 128)
+
+def parse_xml_items(xml_path):
+    tree = ET.parse(xml_path)
+    root = tree.getroot()
+    return [item.attrib for item in root.find("Items").findall("Item")]
+
+def find_gallery_image(img_name, gallery_dirs):
+    for gdir in gallery_dirs:
+        path = os.path.join(gdir, img_name)
+        if os.path.exists(path):
+            return path
+    return None
+
+def average_precision(gt_obj_id, ranked_gallery_obj_ids):
+    hits = 0
+    sum_precisions = 0
+    for i, obj_id in enumerate(ranked_gallery_obj_ids):
+        if obj_id == gt_obj_id:
+            hits += 1
+            precision_at_i = hits / (i + 1)
+            sum_precisions += precision_at_i
+    return sum_precisions / hits if hits > 0 else 0.0
+
+# === CARGA DATOS ===
+query_items = parse_xml_items(query_xml)
+gallery_test_items = parse_xml_items(test_xml)
+gallery_train_items = parse_xml_items(train_xml)
+gallery_items = gallery_test_items + gallery_train_items
+
+gallery_dirs = [test_img_dir, train_img_dir]
+
+with open(results_path, "r") as f:
+    all_results = [line.strip().split() for line in f.readlines()]
+
+random_indices = list(range(len(all_results)))
+random.shuffle(random_indices)
+
+all_ap = []
+
+for q_counter, q_idx in enumerate(random_indices[:num_queries_to_show]):
+    preds = list(map(int, all_results[q_idx]))
+    print(preds)
+    query_data = query_items[q_idx]
+    query_img_path = os.path.join(query_img_dir, query_data["imageName"])
+    query_obj_id = query_data["objectID"]
+
+    # === Calcular AP ===
+    pred_obj_ids = []
+    for gal_idx in preds:
+        if gal_idx <= 0 or gal_idx > len(gallery_items):
+            continue
+        gal_obj_id = gallery_items[gal_idx]["objectID"]
+        pred_obj_ids.append(gal_obj_id)
+    ap = average_precision(query_obj_id, pred_obj_ids)
+    all_ap.append(ap)
+
+    # === Buscar K imágenes correctas (no repetidas en top-k) ===
+    correct_gallery_imgs = []
+    used_imgs = set()
+    for gal_idx in preds[:top_k]:
+        if gal_idx > 0 and gal_idx <= len(gallery_items):
+            used_imgs.add(gallery_items[gal_idx]["imageName"])
+    for item in gallery_items:
+        if item["objectID"] == query_obj_id and item["imageName"] not in used_imgs:
+            img_path = find_gallery_image(item["imageName"], gallery_dirs)
+            if img_path and os.path.exists(img_path):
+                correct_gallery_imgs.append((img_path, item["imageName"]))
+            if len(correct_gallery_imgs) == top_k:
+                break
+
+    # === Mostrar imágenes ===
+    rows = 2 if correct_gallery_imgs else 1
+    plt.figure(figsize=(18, 4 * rows))
+
+    # Query
+    try:
+        img = Image.open(query_img_path).convert("RGB").resize(resize_dim)
+        plt.subplot(rows, top_k + 1, 1)
+        plt.imshow(img)
+        plt.title("QUERY\n" + query_data["imageName"], fontsize=8)
+        plt.axis("off")
+    except Exception as e:
+        print(f"Error cargando query {query_img_path}: {e}")
+        continue
+
+    # Predicciones top-k
+    for i, gal_idx in enumerate(preds[:top_k]):
+        if gal_idx <= 0 or gal_idx > len(gallery_items):
+            continue
+
+        gal_data = gallery_items[gal_idx]
+        gal_img_path = find_gallery_image(gal_data["imageName"], gallery_dirs)
+        gal_obj_id = gal_data["objectID"]
+
+        if gal_img_path is None:
+            continue
+
+        try:
+            gal_img = Image.open(gal_img_path).convert("RGB").resize(resize_dim)
+            plt.subplot(rows, top_k + 1, i + 2)
+            plt.imshow(gal_img)
+            is_correct = (gal_obj_id == query_obj_id)
+            color = "green" if is_correct else "red"
+            label = "OK" if is_correct else "WRONG"
+            plt.title(f"Top {i+1}\n{gal_data['imageName']}\n{label}", fontsize=8, color=color)
+            plt.axis("off")
+        except Exception as e:
+            print(f"Error cargando {gal_data['imageName']}: {e}")
+            continue
+
+    # Imágenes correctas adicionales
+    for i, (img_path, img_name) in enumerate(correct_gallery_imgs):
+        try:
+            img = Image.open(img_path).convert("RGB").resize(resize_dim)
+            plt.subplot(rows, top_k + 1, top_k + 2 + i)
+            plt.imshow(img)
+            plt.title(f"Correct\n{img_name}", fontsize=8, color="blue")
+            plt.axis("off")
+        except Exception as e:
+            print(f"Error cargando correcta {img_name}: {e}")
+            continue
+
+    plt.suptitle(f"Query {q_counter + 1}: {query_data['imageName']} (objectID: {query_obj_id})\nAP={ap:.3f}", fontsize=14)
+    plt.tight_layout()
+    plt.show()
+
+# === Mostrar mAP ===
+mean_ap = sum(all_ap) / len(all_ap) if all_ap else 0.0
+print(f"\n=== Mean Average Precision (mAP) sobre {len(all_ap)} queries: {mean_ap:.4f} ===")
