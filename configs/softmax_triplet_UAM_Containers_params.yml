@@ -12,7 +12,6 @@ INPUT:
   PROB: 0.5 # random horizontal flip
   RE_PROB: 0.5 # random erasing
   PADDING: 10
-  COLORJITTER: true  # for model ensemble
   
 DATASETS:
   NAMES: ('UAM')
