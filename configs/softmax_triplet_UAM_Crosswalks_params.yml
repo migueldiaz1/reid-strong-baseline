@@ -15,7 +15,7 @@ INPUT:
   
 DATASETS:
   NAMES: ('UAM')
-  ROOT_DIR: '/kaggle/input/uam-base/home/mdb/DL_Lab3/UAM_DATASET/stratified_correct_noC004/Crosswalks'
+  ROOT_DIR: '/kaggle/input/uam-rivas-base/home/mdb/DL_Lab3/COMBINED_DATASET/Crosswalks'
 
 DATALOADER:
   SAMPLER: 'softmax_triplet'
