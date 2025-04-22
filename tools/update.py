@@ -107,15 +107,17 @@ def main():
     q_g_dist = np.dot(qf, np.transpose(gf))
     q_q_dist = np.dot(qf, np.transpose(qf))
     g_g_dist = np.dot(gf, np.transpose(gf))
-
-
-
-
-
+    
     re_rank_dist = re_ranking(q_g_dist, q_q_dist, g_g_dist)
 
+    ###### EDITED MIGUEL
+    clase = os.path.basename(os.path.dirname(args.track))
+    output_dist_dir = os.path.join("/kaggle/working/output_BoT", clase)
+    os.makedirs(output_dist_dir, exist_ok=True)
+    np.savetxt(os.path.join(output_dist_dir, "re_rank_dist.csv"), re_rank_dist, delimiter=",")
+
     indices = np.argsort(re_rank_dist, axis=1)[:, :100]
-    #indices = np.argsort(re_rank_dist, axis=1)[:, :]
+    indices = np.argsort(re_rank_dist, axis=1)[:, :]
 
     m, n = indices.shape
     print('m: {}  n: {}'.format(m, n))
