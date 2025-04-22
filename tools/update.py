@@ -100,8 +100,15 @@ def main():
     # save feature
     qf=qf.cpu().numpy()
     gf=gf.cpu().numpy()
-    np.save("./tools/qf.npy", qf)
-    np.save("./tools/gf.npy", gf)
+    
+    clase = os.path.basename(os.path.dirname(args.track))
+    output_feat_dir = os.path.join("/kaggle/working/output_BoT", clase)
+    os.makedirs(output_feat_dir, exist_ok=True)
+
+    np.save(os.path.join(output_feat_dir, "qf.npy"), qf)
+    np.save(os.path.join(output_feat_dir, "gf.npy"), gf)
+
+    print(f"Guardadas qf y gf en {output_feat_dir}")
 
     #inference(cfg, model, val_loader, num_query)
     q_g_dist = np.dot(qf, np.transpose(gf))
@@ -117,7 +124,7 @@ def main():
     np.savetxt(os.path.join(output_dist_dir, "re_rank_dist.csv"), re_rank_dist, delimiter=",")
 
     indices = np.argsort(re_rank_dist, axis=1)[:, :150]
-    #indices = np.argsort(re_rank_dist, axis=1)
+    indices = np.argsort(re_rank_dist, axis=1)
 
     m, n = indices.shape
     print('m: {}  n: {}'.format(m, n))
