@@ -58,5 +58,5 @@ TEST:
   RE_RANKING: 'no'
   NECK_FEAT: 'after'
   FEAT_NORM: 'yes'
-OUTPUT_DIR: "/kaggle/working/output_BoT"
+OUTPUT_DIR: "/kaggle/working/output_BoT/Containers"
 
